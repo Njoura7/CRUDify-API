@@ -10,8 +10,8 @@ namespace CRUDify_API.Models
         [Required(ErrorMessage = "The Name field is required.")]
         public string  ?Name { get; set; }
 
-        public int Age { get; set; }
+        public int ?Age { get; set; }
 
-        public string? Color { get; set; }
+        public string ?Color { get; set; }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using CRUDify_API.Data;
 using CRUDify_API.Models;
+using CRUDify_API.DTOs;
+using CRUDify_API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,18 +11,17 @@ namespace CRUDify_API.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly DataContext _context;
-
-        public UserController(DataContext context)
+        private readonly IUserService _userService;
+        public UserController(IUserService userService)
         {
-            _context = context;
+            _userService = userService;
         }
 
         // GET: api/User
         [HttpGet]
         public async Task<ActionResult<List<User>>> GetAllUsers()
         {
-            var users = await _context.Users.ToListAsync();
+            var users = await _userService.GetAllUsersAsync();
             return Ok(users);
         }
 
@@ -28,7 +29,7 @@ namespace CRUDify_API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUserById(int id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _userService.GetUserByIdAsync(id);
             if (user == null)
                 return NotFound("User not found.");
 
@@ -37,51 +38,48 @@ namespace CRUDify_API.Controllers
 
         // POST: api/User
         [HttpPost]
-        public async Task<ActionResult<User>> AddUser([FromBody] User user)
+        public async Task<ActionResult> AddUserAsync([FromBody] UserDTO userDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState); 
-            }
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            // Return the created user with a link to the new resource
-            return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, user);
+            await _userService.AddUserAsync(userDto);
+            return CreatedAtAction(nameof(GetUserById), new { id = userDto.Id }, userDto);
         }
 
         // PUT: api/User/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, [FromBody] User updatedUser)
+        public async Task<IActionResult> UpdateUserAsync(int id, [FromBody] UserDTO userDto)
         {
-            if (id != updatedUser.Id)
+            if (id != userDto.Id)
                 return BadRequest("User ID mismatch.");
 
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-                return NotFound("User not found.");
+            try
+            {
+                await _userService.UpdateUserAsync(id, userDto);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
 
-            // Update fields
-            user.Name = updatedUser.Name;
-            user.Age = updatedUser.Age;
-            user.Color = updatedUser.Color;
-
-            await _context.SaveChangesAsync();
             return NoContent();
         }
+
 
         // DELETE: api/User/{id}
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
+        public async Task<IActionResult> DeleteUserAsync(int id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-                return NotFound("User not found.");
+            try
+            {
+                await _userService.DeleteUserAsync(id);
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
 
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
             return NoContent();
         }
+
+
     }
 }
