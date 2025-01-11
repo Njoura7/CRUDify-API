@@ -40,6 +40,11 @@ namespace CRUDify_API.Controllers
         [HttpPost]
         public async Task<ActionResult> AddUserAsync([FromBody] UserDTO userDto)
         {
+            if (!ModelState.IsValid)
+            {
+                // Return validation errors to the frontend
+                return BadRequest(ModelState);
+            }
             await _userService.AddUserAsync(userDto);
             return CreatedAtAction(nameof(GetUserById), new { id = userDto.Id }, userDto);
         }

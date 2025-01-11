@@ -17,7 +17,7 @@ namespace CRUDify_API.Services
         //in the decalarion and the implemenmtation with await
         public async Task<List<UserDTO>> GetAllUsersAsync()
         {
-            //todo: investigate the use cases of car in C
+            //todo: investigate the use cases of var in C#
             var users = await _userRepository.GetAllUsersAsync();
 
             // Map User to UserDTO

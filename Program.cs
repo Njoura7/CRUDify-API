@@ -7,6 +7,19 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+// Add CORS services
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") // React app's URL
+              .AllowAnyMethod()                    // Allow all HTTP methods (GET, POST, etc.)
+              .AllowAnyHeader()                    // Allow any headers
+              .AllowCredentials();                 // Allow cookies/auth tokens
+    });
+});
+
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddControllers();
@@ -28,6 +41,9 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+// Use CORS
+app.UseCors("AllowReactApp");
 
 app.MapControllers();
 
